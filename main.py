@@ -173,9 +173,9 @@ def update(message):
 
     
 if __name__ == '__main__':
-    bot.polling(timeout=80)
-    # while True:
-    #     try:
-    #         bot.polling()
-    #     except:
-    #         pass
+    # bot.polling(timeout=80)
+    while True:
+        try:
+            bot.polling()
+        except:
+            pass
