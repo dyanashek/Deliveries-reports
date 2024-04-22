@@ -99,7 +99,7 @@ def construct_employee_reply(user_id, deliveries):
         total_salary = utils.numbers_format(total_salary)
 
         reply += '╚═════════════\n'
-        reply += f'*ИТОГО ДОСТАВОК:* {deliveries_count}\n*ЗП:* {total_salary}'
+        reply += f'*ИТОГО ДОСТАВОК:* {deliveries_count}\n*ЗП:* {total_salary} р.'
 
         replies = [reply[i:i + config.MAX_LEN] for i in range(0, len(reply), config.MAX_LEN)]
         for reply in replies:
