@@ -24,3 +24,5 @@ DATE_PATTERN = "%d.%m.%y"
 MAX_LEN = 4096
 
 TIME_SLEEP = 3600
+
+KEYWORDS = ['готово', 'готов', 'готоа']

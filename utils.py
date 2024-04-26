@@ -10,6 +10,16 @@ def extract_address(text: str):
     return text
 
 
+def extract_address_from_text(text: str):
+    text = text.lower()
+    for keyword in config.KEYWORDS:
+        text = text.replace(keyword, '')
+
+    text = text.strip(' ').capitalize()
+
+    return text
+
+
 def extract_employee_request(text: str):
     text = text.replace('/employee', '').lstrip(' ')
     data = text.split(' ')
@@ -44,7 +54,6 @@ def validate_data_request(data):
 
     return False, False, False
         
-
 
 def transform_end_date(end_date):
     try:

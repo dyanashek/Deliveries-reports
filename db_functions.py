@@ -2,6 +2,7 @@ from db_models import SessionLocal, DBAdmins, DBDeliveries, DBEmployees, DBShops
 
 
 from sqlalchemy import asc
+from sqlalchemy.orm import joinedload
 
 
 def get_admin(user_id: str):  
@@ -47,7 +48,6 @@ def add_employee(user_name: str, user_id: str):
         db.commit()
 
 
-
 def get_shop(shop_id: str):  
     with SessionLocal() as db:
         shop = db.query(DBShops).filter(DBShops.shop_id == shop_id).first()
@@ -68,9 +68,8 @@ def add_shop(shop_name: str, shop_id: str, shop_price: float):
         db.commit()
 
 
-def add_delivery(user_name: str, user_id: str, shop_name: str, shop_id: str, shop_price: float, address, curr_time):
-    db_delivery = DBDeliveries(employee_name = user_name, employee_id = user_id, 
-                               shop_name = shop_name, shop_id = shop_id, shop_price = shop_price,
+def add_delivery(employee, shop, shop_price: float, address, curr_time):
+    db_delivery = DBDeliveries(employee = employee, shop = shop, shop_price = shop_price,
                                address = address, delivery_time = curr_time)
 
     with SessionLocal() as db:
@@ -78,23 +77,37 @@ def add_delivery(user_name: str, user_id: str, shop_name: str, shop_id: str, sho
         db.commit()
 
 
-def get_delivery_by_employee(user_name, start_date, end_date):
+def get_delivery_by_employee(employee, start_date, end_date):
     with SessionLocal() as db:
-        deliveries = db.query(DBDeliveries).filter(DBDeliveries.employee_name == user_name, 
-                                             DBDeliveries.delivery_time >= start_date, 
-                                             DBDeliveries.delivery_time <= end_date,
-                                             ).order_by(asc(DBDeliveries.shop_name),
+        deliveries = db.query(DBDeliveries).join(
+                                             DBEmployees, 
+                                             DBDeliveries.employee_id == DBEmployees.employee_id
+                                             ).options(joinedload(DBDeliveries.employee)).join(
+                                             DBShops, 
+                                             DBDeliveries.shop_id == DBShops.shop_id
+                                             ).options(joinedload(DBDeliveries.shop)).filter(
+                                                DBDeliveries.employee == employee, 
+                                                DBDeliveries.delivery_time >= start_date, 
+                                                DBDeliveries.delivery_time <= end_date,
+                                                ).order_by(asc(DBShops.shop_name),
                                                         asc(DBDeliveries.delivery_time),
                                                         ).all()
     return deliveries
 
 
-def get_delivery_by_shop(shop_name, start_date, end_date):
+def get_delivery_by_shop(shop, start_date, end_date):
     with SessionLocal() as db:
-        deliveries = db.query(DBDeliveries).filter(DBDeliveries.shop_name == shop_name, 
-                                             DBDeliveries.delivery_time >= start_date, 
-                                             DBDeliveries.delivery_time <= end_date,
-                                             ).order_by(asc(DBDeliveries.employee_name),
+        deliveries = db.query(DBDeliveries).join(
+                                             DBEmployees, 
+                                             DBDeliveries.employee_id == DBEmployees.employee_id
+                                             ).options(joinedload(DBDeliveries.employee)).join(
+                                             DBShops, 
+                                             DBDeliveries.shop_id == DBShops.shop_id
+                                             ).options(joinedload(DBDeliveries.shop)).filter(
+                                                DBDeliveries.shop == shop, 
+                                                DBDeliveries.delivery_time >= start_date, 
+                                                DBDeliveries.delivery_time <= end_date,
+                                                ).order_by(asc(DBEmployees.employee_name),
                                                         asc(DBDeliveries.delivery_time),
                                                         ).all()
     return deliveries
@@ -102,6 +115,27 @@ def get_delivery_by_shop(shop_name, start_date, end_date):
 
 def get_all_deliveries():
     with SessionLocal() as db:
-        deliveries = db.query(DBDeliveries).order_by(asc(DBDeliveries.delivery_time)).all()
+        deliveries = db.query(DBDeliveries).join(
+                                             DBEmployees, 
+                                             DBDeliveries.employee_id == DBEmployees.employee_id
+                                             ).options(joinedload(DBDeliveries.employee)).join(
+                                             DBShops, 
+                                             DBDeliveries.shop_id == DBShops.shop_id
+                                             ).options(joinedload(DBDeliveries.shop)).order_by(asc(DBDeliveries.delivery_time)).all()
 
     return deliveries
+
+
+def update_shop_info(shop_id, shop_name, price):
+    with SessionLocal() as db:
+        shop = db.query(DBShops).filter(DBShops.shop_id == shop_id).first()
+        shop.shop_price = price
+        shop.shop_name = shop_name
+        db.commit()
+
+
+def update_employee_name(employee_id, employee_name):
+    with SessionLocal() as db:
+        employee = db.query(DBEmployees).filter(DBEmployees.employee_id == employee_id).first()
+        employee.employee_name = employee_name
+        db.commit()

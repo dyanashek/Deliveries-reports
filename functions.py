@@ -26,21 +26,28 @@ def handle_update(user_id):
 
     db_functions.delete_admins()
     for admin in admins:
-        db_functions.add_admin(admin)
+        if admin:
+            db_functions.add_admin(admin[0])
 
     for shop in shops:
-        if not db_functions.get_shop(shop[1]):
+        shop_obj = db_functions.get_shop(shop[1])
+        if not shop_obj:
             try:
                 db_functions.add_shop(shop[0], shop[1], float(shop[2].replace(',', '.')))
-            except Exception as ex:
-                print(ex)
+            except:
                 try:
                     bot.send_message(chat_id=user_id,
                                     text=text.shop_exist(shop[0]),
                                     )
                 except:
                     pass
-    
+        
+        else:
+            try:
+                db_functions.update_shop_info(shop[1], shop[0], float(shop[2].replace(',', '.')))
+            except:
+                pass
+
 
     for employee in employees:
         if not db_functions.get_employee(employee[1]):
@@ -53,6 +60,11 @@ def handle_update(user_id):
                                     )
                 except:
                     pass
+        else:
+            try:
+                db_functions.update_employee_name(employee[1], employee[0])
+            except:
+                pass
 
     try:
         bot.send_message(chat_id=user_id,
@@ -71,15 +83,14 @@ def construct_employee_reply(user_id, deliveries):
         curr_filter = ''
         numerate = 1
         total_salary = 0
-
         for num, delivery in enumerate(deliveries):
-            shop_name = utils.escape_markdown(delivery.shop_name)
+            shop_name = utils.escape_markdown(delivery.shop.shop_name)
             delivery_time = dt.datetime.strftime(delivery.delivery_time, config.DATE_PATTERN)
             address = utils.escape_markdown(delivery.address)
             total_salary += delivery.shop_price
 
             if num == 0:
-                employee_name = utils.escape_markdown(delivery.employee_name)
+                employee_name = utils.escape_markdown(delivery.employee.employee_name)
                 curr_filter = shop_name
                 reply += f'*{employee_name}:*\n\n╔*{shop_name}:*\n'
 
@@ -131,8 +142,8 @@ def construct_shop_reply(user_id, deliveries):
         numerate = 1
 
         for num, delivery in enumerate(deliveries):
-            shop_name = utils.escape_markdown(delivery.shop_name)
-            employee_name = utils.escape_markdown(delivery.employee_name)
+            shop_name = utils.escape_markdown(delivery.shop.shop_name)
+            employee_name = utils.escape_markdown(delivery.employee.employee_name)
             delivery_time = dt.datetime.strftime(delivery.delivery_time, config.DATE_PATTERN)
             address = utils.escape_markdown(delivery.address)
 
@@ -185,7 +196,7 @@ def update_deliveries():
 
             for delivery in db_deliveries:
                 delivery_time = dt.datetime.strftime(delivery.delivery_time, config.DATE_PATTERN)
-                deliveries.append([delivery.employee_name, delivery.shop_name, delivery.address, delivery_time])
+                deliveries.append([delivery.employee.employee_name, delivery.shop.shop_name, delivery.address, delivery_time])
             
             spread_functions.update_deliveries(deliveries)
 

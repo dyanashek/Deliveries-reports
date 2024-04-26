@@ -82,12 +82,10 @@ def update(message):
 
     if employee and shop:
         address = utils.extract_address(message.text)
-        curr_time = dt.datetime.utcnow() + dt.timedelta(hours=4)
+        curr_time = dt.datetime.utcnow() + dt.timedelta(hours=3)
 
-        db_functions.add_delivery(user_name=employee.employee_name,
-                                  user_id=employee.employee_id,
-                                  shop_name=shop.shop_name,
-                                  shop_id=shop.shop_id,
+        db_functions.add_delivery(employee=employee,
+                                  shop=shop,
                                   shop_price = shop.shop_price,
                                   address=address,
                                   curr_time=curr_time,
@@ -95,15 +93,16 @@ def update(message):
 
 
 @bot.message_handler(commands=['employee'])
-def update(message):
+def employee_handler(message):
     user_id = str(message.from_user.id)
     if  user_id == config.MANAGER_ID or db_functions.get_admin(user_id):
         data = utils.extract_employee_request(message.text)
         employee_name, start_date, end_date = utils.validate_data_request(data)
 
         if employee_name and start_date and end_date:
-            if db_functions.get_employee_by_name(employee_name):
-                deliveries = db_functions.get_delivery_by_employee(employee_name, start_date, end_date)
+            employee = db_functions.get_employee_by_name(employee_name)
+            if employee:
+                deliveries = db_functions.get_delivery_by_employee(employee, start_date, end_date)
                 threading.Thread(daemon=True, target=functions.construct_employee_reply, args=(user_id, deliveries,)).start()
             else:
                 try:
@@ -141,8 +140,9 @@ def update(message):
         shop_name, start_date, end_date = utils.validate_data_request(data)
 
         if shop_name and start_date and end_date:
-            if db_functions.get_shop_by_name(shop_name):
-                deliveries = db_functions.get_delivery_by_shop(shop_name, start_date, end_date)
+            shop = db_functions.get_shop_by_name(shop_name)
+            if shop:
+                deliveries = db_functions.get_delivery_by_shop(shop, start_date, end_date)
                 threading.Thread(daemon=True, target=functions.construct_shop_reply, args=(user_id, deliveries,)).start()
             else:
                 try:
@@ -171,7 +171,34 @@ def update(message):
         except:
             pass
 
+
+@bot.message_handler(content_types=['text'])
+def handle_text(message):
+    handle = False
+
+    for keyword in config.KEYWORDS:
+        if keyword in message.text.lower():
+            handle = True
     
+    if handle:
+        user_id = str(message.from_user.id)
+        chat_id = str(message.chat.id)
+
+        employee = db_functions.get_employee(user_id)
+        shop = db_functions.get_shop(chat_id)
+
+        if employee and shop:
+            address = utils.extract_address_from_text(message.text)
+            curr_time = dt.datetime.utcnow() + dt.timedelta(hours=3)
+
+            db_functions.add_delivery(employee=employee,
+                                    shop=shop,
+                                    shop_price = shop.shop_price,
+                                    address=address,
+                                    curr_time=curr_time,
+                                    )
+    
+
 if __name__ == '__main__':
     # bot.polling(timeout=80)
     while True:
