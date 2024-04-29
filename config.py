@@ -18,6 +18,7 @@ ADMINS_LIST_NAME = 'admins'
 EMPLOYEES_LIST_NAME = 'employees'
 SHOPS_LIST_NAME = 'shops'
 DELIVERIES_LIST_NAME = 'deliveries'
+AGROCITIES_LIST_NAME = 'agrocities'
 
 DATE_PATTERN = "%d.%m.%y"
 
@@ -25,4 +26,4 @@ MAX_LEN = 4096
 
 TIME_SLEEP = 3600
 
-KEYWORDS = ['готово', 'готов', 'готоа']
+KEYWORDS = ['готово ', 'готов ', 'готоа ', ' готово', ' готов', ' готоа']

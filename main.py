@@ -72,6 +72,47 @@ def update(message):
             pass
 
 
+@bot.message_handler(commands=['cancel'])
+def update(message):
+    user_id = str(message.from_user.id)
+    if  user_id == config.MANAGER_ID or db_functions.get_admin(user_id):
+        if delivery_id := utils.extract_id(message.text):
+            if db_functions.delete_delivery(delivery_id):
+                try:
+                    bot.send_message(chat_id=user_id,
+                                    text=text.DELIVERY_DELETED,
+                                    parse_mode='Markdown',
+                                    )
+                except:
+                    pass
+            else:
+                try:
+                    bot.send_message(chat_id=user_id,
+                                    text=text.ID_NOT_FOUND,
+                                    parse_mode='Markdown',
+                                    )
+                except:
+                    pass
+
+        else:
+            try:
+                bot.send_message(chat_id=user_id,
+                                 text=text.WRONG_ID,
+                                 parse_mode='Markdown',
+                                 )
+            except:
+                pass
+
+    else:
+        try:
+            bot.send_message(chat_id=user_id,
+                                text=text.NOT_ALLOWED,
+                                parse_mode='Markdown',
+                                )
+        except:
+            pass
+
+
 @bot.message_handler(commands=['done'])
 def update(message):
     user_id = str(message.from_user.id)
@@ -86,6 +127,7 @@ def update(message):
 
         db_functions.add_delivery(employee=employee,
                                   shop=shop,
+                                  employee_price = employee.employee_price,
                                   shop_price = shop.shop_price,
                                   address=address,
                                   curr_time=curr_time,
@@ -193,6 +235,7 @@ def handle_text(message):
 
             db_functions.add_delivery(employee=employee,
                                     shop=shop,
+                                    employee_price = employee.employee_price,
                                     shop_price = shop.shop_price,
                                     address=address,
                                     curr_time=curr_time,

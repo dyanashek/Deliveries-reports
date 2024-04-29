@@ -20,6 +20,16 @@ def extract_address_from_text(text: str):
     return text
 
 
+def extract_id(text: str):
+    delivery_id = text.replace('/cancel', '').strip(' ')
+    try:
+        delivery_id = int(delivery_id)
+    except:
+        delivery_id = False
+    
+    return delivery_id
+
+
 def extract_employee_request(text: str):
     text = text.replace('/employee', '').lstrip(' ')
     data = text.split(' ')

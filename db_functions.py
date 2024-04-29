@@ -1,4 +1,4 @@
-from db_models import SessionLocal, DBAdmins, DBDeliveries, DBEmployees, DBShops
+from db_models import SessionLocal, DBAdmins, DBDeliveries, DBEmployees, DBShops, DBAgrocities
 
 
 from sqlalchemy import asc
@@ -40,8 +40,8 @@ def get_employee_by_name(user_name: str):
     return employee
 
 
-def add_employee(user_name: str, user_id: str):
-    db_employee = DBEmployees(employee_name = user_name, employee_id = user_id)
+def add_employee(user_name: str, user_id: str, employee_price: float):
+    db_employee = DBEmployees(employee_name = user_name, employee_id = user_id, employee_price = employee_price)
 
     with SessionLocal() as db:
         db.add(db_employee)
@@ -68,9 +68,10 @@ def add_shop(shop_name: str, shop_id: str, shop_price: float):
         db.commit()
 
 
-def add_delivery(employee, shop, shop_price: float, address, curr_time):
+def add_delivery(employee, shop, employee_price: float, shop_price: float, address, curr_time):
     db_delivery = DBDeliveries(employee = employee, shop = shop, shop_price = shop_price,
-                               address = address, delivery_time = curr_time)
+                               employee_price = employee_price, address = address, 
+                               delivery_time = curr_time)
 
     with SessionLocal() as db:
         db.add(db_delivery)
@@ -126,6 +127,20 @@ def get_all_deliveries():
     return deliveries
 
 
+def delete_delivery(delivery_id):
+    with SessionLocal() as db:
+        delivery = db.query(DBDeliveries).filter(DBDeliveries.id == delivery_id).first()
+        if delivery:
+            try:
+                db.delete(delivery)
+                db.commit()
+
+                return True
+            except:
+                return False
+        else:
+            return False
+
 def update_shop_info(shop_id, shop_name, price):
     with SessionLocal() as db:
         shop = db.query(DBShops).filter(DBShops.shop_id == shop_id).first()
@@ -134,8 +149,32 @@ def update_shop_info(shop_id, shop_name, price):
         db.commit()
 
 
-def update_employee_name(employee_id, employee_name):
+def update_employee_name(employee_id, employee_name, employee_price):
     with SessionLocal() as db:
         employee = db.query(DBEmployees).filter(DBEmployees.employee_id == employee_id).first()
         employee.employee_name = employee_name
+        employee.employee_price = employee_price
+        db.commit()
+
+
+def get_agrocity(city: str):  
+    with SessionLocal() as db:
+        admin = db.query(DBAgrocities).filter(DBAgrocities.city == city).first()
+    return admin
+
+
+def add_agrocity(city: str):
+    db_city = DBAgrocities(city = city)
+
+    with SessionLocal() as db:
+        db.add(db_city)
+        try:
+            db.commit()
+        except:
+            pass
+
+
+def delete_agrocities():
+    with SessionLocal() as db:
+        db.query(DBAgrocities).delete()
         db.commit()

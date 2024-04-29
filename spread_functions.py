@@ -28,6 +28,13 @@ def get_admins():
     return admins
 
 
+def get_agrocities():
+    work_sheet = sheet.worksheet(config.AGROCITIES_LIST_NAME)
+    cities = work_sheet.get_all_values()[1::]
+    
+    return cities
+
+
 def update_deliveries(deliveries):
     work_sheet = sheet.worksheet(config.DELIVERIES_LIST_NAME)
-    work_sheet.update(f'A2:DJ{len(deliveries) + 1}', deliveries)
+    work_sheet.update(f'A2:E{len(deliveries) + 1}', deliveries)
