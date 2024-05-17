@@ -88,3 +88,56 @@ def numbers_format(value):
     """Makes a good looking numbers format."""
 
     return '{:,}'.format(value).replace(',', ' ')
+
+
+def validate_add_data(data):
+    if len(data) == 4:
+        if command_date := validate_date(data[-1]):
+            data[-1] = command_date
+            return data
+
+    return False
+
+
+def parse_add_command(text: str):
+    text = text.replace('/add', '').strip(' ')
+    data = text.split(';')
+    return validate_add_data(data)
+
+
+def parse_shop_price_command(text: str):
+    text = text.replace('/shop_price', '').strip(' ')
+    data = text.split(' ')
+    if len(data) == 2:
+        try:
+            delivery_id = int(data[0])
+        except:
+            delivery_id = False
+        
+        try:
+            price = float(data[1].replace(',', '.'))
+        except:
+            price = False
+
+        return delivery_id, price
+
+    return False, False
+
+
+def parse_employee_price_command(text: str):
+    text = text.replace('/employee_price', '').strip(' ')
+    data = text.split(' ')
+    if len(data) == 2:
+        try:
+            delivery_id = int(data[0])
+        except:
+            delivery_id = False
+        
+        try:
+            price = float(data[1].replace(',', '.'))
+        except:
+            price = False
+
+        return delivery_id, price
+
+    return False, False

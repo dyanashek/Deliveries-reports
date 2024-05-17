@@ -108,10 +108,30 @@ def get_delivery_by_shop(shop, start_date, end_date):
                                                 DBDeliveries.shop == shop, 
                                                 DBDeliveries.delivery_time >= start_date, 
                                                 DBDeliveries.delivery_time <= end_date,
-                                                ).order_by(asc(DBEmployees.employee_name),
+                                                ).order_by(
                                                         asc(DBDeliveries.delivery_time),
                                                         ).all()
     return deliveries
+
+
+def change_delivery_shop_price(delivery_id, shop_price):
+    with SessionLocal() as db:
+        if delivery := db.query(DBDeliveries).filter(DBDeliveries.id == delivery_id).first():
+            delivery.shop_price = shop_price
+            db.commit()
+            return True
+
+        return False
+
+
+def change_delivery_employee_price(delivery_id, employee_price):
+    with SessionLocal() as db:
+        if delivery := db.query(DBDeliveries).filter(DBDeliveries.id == delivery_id).first():
+            delivery.employee_price = employee_price
+            db.commit()
+            return True
+            
+        return False
 
 
 def get_all_deliveries():
@@ -141,6 +161,7 @@ def delete_delivery(delivery_id):
         else:
             return False
 
+
 def update_shop_info(shop_id, shop_name, price):
     with SessionLocal() as db:
         shop = db.query(DBShops).filter(DBShops.shop_id == shop_id).first()
@@ -157,10 +178,10 @@ def update_employee_name(employee_id, employee_name, employee_price):
         db.commit()
 
 
-def get_agrocity(city: str):  
+def get_agrocities():  
     with SessionLocal() as db:
-        admin = db.query(DBAgrocities).filter(DBAgrocities.city == city).first()
-    return admin
+        cities = db.query(DBAgrocities).all()
+    return cities
 
 
 def add_agrocity(city: str):

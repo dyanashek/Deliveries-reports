@@ -37,4 +37,4 @@ def get_agrocities():
 
 def update_deliveries(deliveries):
     work_sheet = sheet.worksheet(config.DELIVERIES_LIST_NAME)
-    work_sheet.update(f'A2:E{len(deliveries) + 1}', deliveries)
+    work_sheet.update(f'A2:G{len(deliveries) + 1}', deliveries)

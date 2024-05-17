@@ -34,7 +34,7 @@ def handle_update(user_id):
     for city in cities:
         if city:
             try:
-                city = utils.escape_markdown(city[0].strip(' ').capitalize())
+                city = utils.escape_markdown(city[0].strip(' ').lower())
                 db_functions.add_agrocity(city)
             except:
                 pass
@@ -62,7 +62,12 @@ def handle_update(user_id):
     for employee in employees:
         if not db_functions.get_employee(employee[1]):
             try:
-                db_functions.add_employee(employee[0], employee[1], float(employee[2].replace(',', '.')))
+                if employee[2].lower().strip(' ') == 'full':
+                    price = 0
+                else:
+                    price = float(employee[2].replace(',', '.'))
+
+                db_functions.add_employee(employee[0], employee[1], price)
             except:
                 try:
                     bot.send_message(chat_id=user_id,
@@ -72,7 +77,12 @@ def handle_update(user_id):
                     pass
         else:
             try:
-                db_functions.update_employee_name(employee[1], employee[0], float(employee[2].replace(',', '.')))
+                if employee[2].lower().strip(' ') == 'full':
+                    price = 0
+                else:
+                    price = float(employee[2].replace(',', '.'))
+
+                db_functions.update_employee_name(employee[1], employee[0], price)
             except:
                 pass
 
@@ -97,17 +107,14 @@ def construct_employee_reply(user_id, deliveries):
             shop_name = utils.escape_markdown(delivery.shop.shop_name)
             delivery_time = dt.datetime.strftime(delivery.delivery_time, config.DATE_PATTERN)
             address = utils.escape_markdown(delivery.address)
-            if db_functions.get_agrocity(address):
-                total_salary += (delivery.employee_price * 2)
-            else:
-                total_salary += delivery.employee_price
+
+            total_salary += delivery.employee_price
 
             if num == 0:
                 employee_name = utils.escape_markdown(delivery.employee.employee_name)
                 curr_filter = shop_name
                 reply += f'*{employee_name}:*\n\n╔*{shop_name}:*\n'
 
-            
             if shop_name == curr_filter:
                 reply += f'╠*{numerate}.* (id: {delivery.id}) {address} - {delivery_time}\n'
                 numerate += 1
@@ -151,8 +158,6 @@ def construct_shop_reply(user_id, deliveries):
 
         deliveries_count = len(deliveries)
 
-        curr_filter = ''
-        numerate = 1
         total_payout = 0
 
         for num, delivery in enumerate(deliveries):
@@ -160,28 +165,20 @@ def construct_shop_reply(user_id, deliveries):
             employee_name = utils.escape_markdown(delivery.employee.employee_name)
             delivery_time = dt.datetime.strftime(delivery.delivery_time, config.DATE_PATTERN)
             address = utils.escape_markdown(delivery.address)
-
-            if db_functions.get_agrocity(address):
-                total_payout += (delivery.shop_price * 2)
-            else:
-                total_payout += delivery.shop_price
-
-            if num == 0:
-                curr_filter = employee_name
-                reply += f'*{shop_name}:*\n\n╔*{employee_name}:*\n'
-
             
-            if employee_name == curr_filter:
-                reply += f'╠*{numerate}.* (id: {delivery.id}) {address} - {delivery_time}\n'
-                numerate += 1
+            total_payout += delivery.shop_price
 
+            symbol = '╠'
+            if num == 0:
+                reply += f'*{shop_name}:*\n\n'
+                symbol = '╔'
+            
+            reply += f'{symbol}*{num + 1}.* (id: {delivery.id}) {address} - {delivery_time}, {employee_name}'
+
+            if delivery.shop_price == delivery.shop.shop_price:
+                reply += '\n'
             else:
-                curr_filter = employee_name
-                reply += '╚═════════════\n'
-                numerate = 1
-                reply += f'╔*{employee_name}:*\n'
-                reply += f'╠*{numerate}.* (id: {delivery.id}) {address} - {delivery_time}\n'
-                numerate += 1
+                reply += f' - {delivery.shop_price} р.\n'
 
         total_payout = utils.numbers_format(total_payout)
 
@@ -221,7 +218,10 @@ def update_deliveries():
                                    delivery.employee.employee_name, 
                                    delivery.shop.shop_name,
                                    delivery.address,
-                                   delivery_time])
+                                   delivery_time,
+                                   delivery.employee_price,
+                                   delivery.shop_price,
+                                   ])
             
             spread_functions.update_deliveries(deliveries)
 
