@@ -144,7 +144,7 @@ def get_all_deliveries():
                                              DBDeliveries.shop_id == DBShops.shop_id
                                              ).options(joinedload(DBDeliveries.shop)).order_by(asc(DBDeliveries.delivery_time)).all()
 
-    return deliveries
+    return deliveries[-5000:]
 
 
 def delete_delivery(delivery_id):
