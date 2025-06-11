@@ -378,7 +378,6 @@ def employee_price(message):
 
 @bot.message_handler(content_types=['text'])
 def handle_text(message):
-    print('1')
     handle = False
 
     for keyword in config.KEYWORDS:
@@ -386,7 +385,6 @@ def handle_text(message):
             handle = True
     
     if handle:
-        print('2')
         user_id = str(message.from_user.id)
         chat_id = str(message.chat.id)
 
@@ -394,7 +392,6 @@ def handle_text(message):
         shop = db_functions.get_shop(chat_id)
 
         if employee and shop:
-            print('123')
             address = utils.extract_address_from_text(message.text)
             curr_time = dt.datetime.utcnow() + dt.timedelta(hours=3)
 
